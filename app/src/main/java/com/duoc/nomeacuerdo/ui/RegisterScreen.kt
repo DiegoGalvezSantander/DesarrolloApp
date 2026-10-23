@@ -10,63 +10,66 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen(navController: NavController) {
-    var nombre by remember { mutableStateOf("") }
-    var correo by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun RegisterScreen(navController: NavController, viewModel: AuthViewModel) {
+    val nombre by viewModel.regNombre.collectAsState()
+    val correo by viewModel.regCorreo.collectAsState()
+    val password by viewModel.regPassword.collectAsState()
+    val error by viewModel.regError.collectAsState()
+    val usuarioLogueado by viewModel.usuarioLogueado.collectAsState()
+
+    LaunchedEffect(usuarioLogueado) {
+        if (usuarioLogueado != null) {
+            navController.navigate("home") { popUpTo("login") { inclusive = true } }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "ÚNETE A MYGOS",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+        Text(text = "ÚNETE A MYGOS", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 24.dp))
 
         OutlinedTextField(
             value = nombre,
-            onValueChange = { nombre = it },
+            onValueChange = { viewModel.onRegNombreChange(it) },
             label = { Text("NOMBRE Y APELLIDO") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = error != null
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = correo,
-            onValueChange = { correo = it },
+            onValueChange = { viewModel.onRegCorreoChange(it) },
             label = { Text("EMAIL") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = error != null
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { viewModel.onRegPasswordChange(it) },
             label = { Text("CONTRASEÑA") },
             modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            isError = error != null,
+            supportingText = { if (error != null) Text(text = error!!, color = MaterialTheme.colorScheme.error) }
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = { },
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = { viewModel.registrarUsuario() }, modifier = Modifier.fillMaxWidth()) {
             Text("REGISTRARSE")
         }
 
-        TextButton(
-            onClick = { navController.popBackStack() }
-        ) {
+        TextButton(onClick = { navController.popBackStack() }) {
             Text("Volver al Login")
         }
     }

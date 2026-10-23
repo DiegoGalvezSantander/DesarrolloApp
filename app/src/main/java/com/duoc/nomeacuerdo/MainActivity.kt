@@ -15,7 +15,6 @@ import com.duoc.nomeacuerdo.ui.DetalleEventoScreen
 import com.duoc.nomeacuerdo.ui.EventosScreen
 import com.duoc.nomeacuerdo.ui.LoginScreen
 import com.duoc.nomeacuerdo.ui.MatchScreen
-import com.duoc.nomeacuerdo.ui.PerfilScreen
 import com.duoc.nomeacuerdo.ui.RegisterScreen
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
@@ -45,7 +44,6 @@ class MainActivity : ComponentActivity() {
                     composable("register") { RegisterScreen(navController, authViewModel) }
                     composable("home") { EventosScreen(navController) }
                     composable("match") { MatchScreen(navController, matchViewModel, authViewModel) }
-                    composable("perfil") { PerfilScreen(navController, authViewModel) }
                     composable("detalle_evento/{titulo}") { backStackEntry ->
                         val titulo = backStackEntry.arguments?.getString("titulo") ?: "Evento"
                         DetalleEventoScreen(navController, titulo, matchViewModel, authViewModel)

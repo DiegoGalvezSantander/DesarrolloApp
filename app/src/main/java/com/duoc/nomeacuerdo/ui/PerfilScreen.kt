@@ -40,6 +40,7 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var mostrarMensajeGuardado by remember { mutableStateOf(false) }
 
     val takePictureLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
@@ -130,10 +131,31 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { },
+            onClick = {
+                viewModel.actualizarDatosPerfil(nombre, email)
+                mostrarMensajeGuardado = true
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Guardar Cambios")
         }
+
+        TextButton(
+            onClick = {
+                viewModel.cerrarSesion()
+                navController.navigate("login") { popUpTo("home") { inclusive = true } }
+            }
+        ) {
+            Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error)
+        }
+    }
+
+    if (mostrarMensajeGuardado) {
+        AlertDialog(
+            onDismissRequest = { mostrarMensajeGuardado = false },
+            title = { Text("¡Guardado!") },
+            text = { Text("Tus datos se han actualizado correctamente.") },
+            confirmButton = { Button(onClick = { mostrarMensajeGuardado = false }) { Text("OK") } }
+        )
     }
 }

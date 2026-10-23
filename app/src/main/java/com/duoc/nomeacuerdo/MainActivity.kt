@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room3.Room
+import com.duoc.nomeacuerdo.model.AppDatabase
 import com.duoc.nomeacuerdo.ui.DetalleEventoScreen
 import com.duoc.nomeacuerdo.ui.EventosScreen
 import com.duoc.nomeacuerdo.ui.LoginScreen
@@ -14,6 +16,12 @@ import com.duoc.nomeacuerdo.ui.RegisterScreen
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
 
 class MainActivity : ComponentActivity() {
+    private val db by lazy {
+        Room.databaseBuilder(applicationContext, AppDatabase::class.java, "mygos_db")
+            .fallbackToDestructiveMigration()
+            .build()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

@@ -44,7 +44,14 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(onClick = { }, modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = {
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("INICIAR SESIÓN")
         }
 

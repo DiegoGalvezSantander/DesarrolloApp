@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.duoc.nomeacuerdo.ui.EventosScreen
 import com.duoc.nomeacuerdo.ui.LoginScreen
 import com.duoc.nomeacuerdo.ui.RegisterScreen
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") { LoginScreen(navController) }
                     composable("register") { RegisterScreen(navController) }
+                    composable("home") { EventosScreen(navController) }
                 }
             }
         }

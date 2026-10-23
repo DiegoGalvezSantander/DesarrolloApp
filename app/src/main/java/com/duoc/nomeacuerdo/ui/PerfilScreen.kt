@@ -1,6 +1,14 @@
 package com.duoc.nomeacuerdo.ui
 
+import android.Manifest
+import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -8,20 +16,52 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
+import java.io.File
 
 @Composable
 fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
+    val context = LocalContext.current
     val usuario by viewModel.usuarioLogueado.collectAsState()
 
     var nombre by remember { mutableStateOf(usuario?.nombreCompleto ?: "") }
     var email by remember { mutableStateOf(usuario?.correo ?: "") }
     var pin by remember { mutableStateOf("......") }
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && imageUri != null) {
+            val bmp = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+            bitmap = bmp
+            viewModel.actualizarFotoPerfil(imageUri.toString())
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val file = File.createTempFile("profile_photo", ".jpg", context.cacheDir)
+            file.deleteOnExit()
+            val uri = FileProvider.getUriForFile(context, context.packageName + ".provider", file)
+            imageUri = uri
+            takePictureLauncher.launch(uri)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -39,13 +79,23 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
         Text(text = "Mi Perfil", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 24.dp))
 
         Box(
-            modifier = Modifier.size(120.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) },
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "FOTO", fontSize = 18.sp)
+            if (bitmap != null) {
+                Image(bitmap = bitmap!!.asImageBitmap(), contentDescription = "Foto", contentScale = ContentScale.Crop)
+            } else if (usuario?.fotoPerfilUri != null) {
+                AsyncImage(model = usuario?.fotoPerfilUri, contentDescription = "Foto", contentScale = ContentScale.Crop)
+            } else {
+                Text(text = "FOTO", fontSize = 18.sp)
+            }
         }
 
-        TextButton(onClick = { }) {
+        TextButton(onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }) {
             Text("⚙ Editar")
         }
 

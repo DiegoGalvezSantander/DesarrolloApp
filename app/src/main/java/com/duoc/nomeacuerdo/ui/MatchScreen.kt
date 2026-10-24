@@ -84,7 +84,8 @@ fun MatchScreen(navController: NavController, viewModel: MatchViewModel, authVie
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(text = "Evento: ${match.nombreEvento}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text(text = "Fecha: ${match.fechaMatch}", fontSize = 16.sp)
+                            Text(text = "Hora: ${match.horaEvento}", fontSize = 16.sp)
+                            Text(text = "Lugar: ${match.direccionEvento}", fontSize = 16.sp)
                         }
                     }
                 }

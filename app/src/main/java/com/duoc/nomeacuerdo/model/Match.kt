@@ -7,6 +7,7 @@ import androidx.room3.PrimaryKey
 data class Match(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nombreEvento: String,
-    val fechaMatch: String,
+    val horaEvento: String,
+    val direccionEvento: String,
     val usuarioCorreo: String
 )

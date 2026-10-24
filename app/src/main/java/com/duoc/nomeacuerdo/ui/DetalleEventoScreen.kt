@@ -90,9 +90,14 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
 
         Button(
             onClick = {
-                if (usuario != null) {
+                if (usuario != null && evento != null) {
                     isPressed = true
-                    matchViewModel.agregarMatch(tituloEvento, usuario!!.correo)
+                    matchViewModel.agregarMatch(
+                        tituloEvento,
+                        evento.hora,
+                        evento.direccion,
+                        usuario!!.correo
+                    )
                     mostrarModal = true
                 }
             },

@@ -35,6 +35,11 @@ fun EventosScreen(navController: NavController) {
     val listaEventos = EventoRepository.listaEventos
     var busqueda by remember { mutableStateOf("") }
 
+    val eventosFiltrados = listaEventos.filter {
+        it.titulo.contains(busqueda, ignoreCase = true) ||
+                it.descripcion.contains(busqueda, ignoreCase = true)
+    }
+
     var location by remember { mutableStateOf<Location?>(null) }
     var permisoConcedido by remember { mutableStateOf(false) }
 
@@ -87,7 +92,7 @@ fun EventosScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(listaEventos) { evento ->
+            items(eventosFiltrados) { evento ->
                 Card(
                     modifier = Modifier.fillMaxWidth().clickable { navController.navigate("detalle_evento/${Uri.encode(evento.titulo)}") },
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)

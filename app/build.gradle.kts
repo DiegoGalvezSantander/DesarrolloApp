@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -49,7 +50,7 @@ dependencies {
     implementation(libs.androidx.room3.runtime)
     implementation(libs.coil.compose)
     implementation("androidx.compose.material:material-icons-extended")
-
+    implementation(libs.play.services.location)
     ksp(libs.androidx.room3.compiler)
 
     testImplementation(libs.junit)

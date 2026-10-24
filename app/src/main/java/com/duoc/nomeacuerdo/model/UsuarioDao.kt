@@ -18,4 +18,10 @@ interface UsuarioDao {
 
     @Query("SELECT * FROM usuarios WHERE correo = :correo LIMIT 1")
     suspend fun obtenerUsuarioPorCorreo(correo: String): Usuario?
+
+    @Query("UPDATE usuarios SET logueado = :estado")
+    suspend fun actualizarEstadoSesion(estado: Boolean)
+
+    @Query("SELECT * FROM usuarios WHERE logueado = 1 LIMIT 1")
+    suspend fun obtenerUsuarioLogueado(): Usuario?
 }

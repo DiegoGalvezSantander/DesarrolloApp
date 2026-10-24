@@ -28,6 +28,15 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
     private val _regError = MutableStateFlow<String?>(null)
     val regError: StateFlow<String?> = _regError
 
+    init {
+        viewModelScope.launch {
+            val usuario = repository.obtenerUsuarioLogueado()
+            if (usuario != null) {
+                _usuarioLogueado.value = usuario
+            }
+        }
+    }
+
     fun onLoginCorreoChange(correo: String) { _loginCorreo.value = correo }
     fun onLoginPasswordChange(pass: String) { _loginPassword.value = pass }
     fun onRegNombreChange(nombre: String) { _regNombre.value = nombre }
@@ -44,6 +53,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
         viewModelScope.launch {
             val usuario = repository.login(correo, pass)
             if (usuario != null) {
+                repository.actualizarEstadoSesion(true)
                 _usuarioLogueado.value = usuario
                 _loginError.value = null
             } else {
@@ -76,7 +86,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
                 _regError.value = "Este correo ya está registrado"
                 return@launch
             }
-            val nuevoUsuario = Usuario(nombreCompleto = nombre, correo = correo, password = pass)
+            val nuevoUsuario = Usuario(nombreCompleto = nombre, correo = correo, password = pass, logueado = true)
             repository.registrarUsuario(nuevoUsuario)
             _usuarioLogueado.value = nuevoUsuario
             _regError.value = null
@@ -102,8 +112,11 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
     }
 
     fun cerrarSesion() {
-        _usuarioLogueado.value = null
-        _loginCorreo.value = ""
-        _loginPassword.value = ""
+        viewModelScope.launch {
+            repository.actualizarEstadoSesion(false)
+            _usuarioLogueado.value = null
+            _loginCorreo.value = ""
+            _loginPassword.value = ""
+        }
     }
 }

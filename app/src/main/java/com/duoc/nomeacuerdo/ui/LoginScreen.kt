@@ -1,15 +1,18 @@
 package com.duoc.nomeacuerdo.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.duoc.nomeacuerdo.R
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
 
 @Composable
@@ -32,9 +35,13 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "LOGO", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "LOGIN", fontSize = 24.sp, modifier = Modifier.padding(bottom = 16.dp))
+        Image(
+            painter = painterResource(id = R.drawable.logo_mygos),
+            contentDescription = "Logo Mygos",
+            modifier = Modifier.size(150.dp).padding(bottom = 24.dp)
+        )
+
+        Text(text = "INICIAR SESIÓN", fontSize = 24.sp, modifier = Modifier.padding(bottom = 16.dp))
 
         OutlinedTextField(
             value = correo,

@@ -40,7 +40,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             NomeacuerdoTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "login") {
+                val usuarioActual = authViewModel.usuarioLogueado.value
+                val rutaInicio = if (usuarioActual != null) "home" else "login"
+
+                NavHost(navController = navController, startDestination = rutaInicio) {
                     composable("login") { LoginScreen(navController, authViewModel) }
                     composable("register") { RegisterScreen(navController, authViewModel) }
                     composable("home") { EventosScreen(navController) }

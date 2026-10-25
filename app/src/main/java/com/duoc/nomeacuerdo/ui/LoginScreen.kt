@@ -76,7 +76,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel) {
 
     if (mostrarModal) {
         AlertDialog(
-            onDismissRequest = { mostrarModal = false },
+            onDismissRequest = { },
             title = { Text("Confirmación") },
             text = { Text("Has iniciado sesión correctamente.") },
             confirmButton = {

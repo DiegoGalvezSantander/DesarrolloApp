@@ -102,10 +102,14 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
         }
     }
 
-    fun actualizarDatosPerfil(nuevoNombre: String, nuevoCorreo: String) {
+    fun actualizarDatosPerfil(nuevoNombre: String, nuevoCorreo: String, nuevaPassword: String) {
         val usuarioActual = _usuarioLogueado.value ?: return
         viewModelScope.launch {
-            val usuarioModificado = usuarioActual.copy(nombreCompleto = nuevoNombre, correo = nuevoCorreo)
+            val usuarioModificado = usuarioActual.copy(
+                nombreCompleto = nuevoNombre,
+                correo = nuevoCorreo,
+                password = nuevaPassword
+            )
             repository.actualizarUsuario(usuarioModificado)
             _usuarioLogueado.value = usuarioModificado
         }

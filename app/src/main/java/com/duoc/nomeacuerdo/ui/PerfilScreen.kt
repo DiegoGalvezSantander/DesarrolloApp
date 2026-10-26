@@ -36,7 +36,7 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
 
     var nombre by remember { mutableStateOf(usuario?.nombreCompleto ?: "") }
     var email by remember { mutableStateOf(usuario?.correo ?: "") }
-    var pin by remember { mutableStateOf("......") }
+    var pin by remember { mutableStateOf("") }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -123,7 +123,7 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
         OutlinedTextField(
             value = pin,
             onValueChange = { pin = it },
-            label = { Text("PIN") },
+            label = { Text("Nueva Contraseña / PIN") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
@@ -132,7 +132,7 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
 
         Button(
             onClick = {
-                viewModel.actualizarDatosPerfil(nombre, email)
+                viewModel.actualizarDatosPerfil(nombre, email, pin)
                 mostrarMensajeGuardado = true
             },
             modifier = Modifier.fillMaxWidth()

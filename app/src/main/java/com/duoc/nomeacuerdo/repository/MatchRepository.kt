@@ -1,9 +1,17 @@
 package com.duoc.nomeacuerdo.repository
 
-import com.duoc.nomeacuerdo.model.Match
-import com.duoc.nomeacuerdo.model.MatchDao
+import com.duoc.nomeacuerdo.data.model.ResenaRemota
+import com.duoc.nomeacuerdo.data.remote.MygosRetrofit
 
-class MatchRepository(private val matchDao: MatchDao) {
-    suspend fun registrarMatch(match: Match) { matchDao.insertarMatch(match) }
-    suspend fun obtenerMatches(correo: String): List<Match> { return matchDao.obtenerMatchesPorUsuario(correo) }
+class MatchRepository {
+
+    suspend fun registrarMatch(resena: ResenaRemota) {
+        MygosRetrofit.api.crearResena(resena)
+    }
+
+    suspend fun obtenerMatches(correo: String): List<ResenaRemota> =
+        MygosRetrofit.api.getResenas().filter {
+            it.usuario_correo == correo
+        }
 }
+

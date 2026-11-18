@@ -7,10 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.duoc.nomeacuerdo.repository.MatchRepository
 import com.duoc.nomeacuerdo.repository.UsuarioRepository
 import com.duoc.nomeacuerdo.ui.*
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
+import com.duoc.nomeacuerdo.viewmodel.MatchViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -18,8 +20,16 @@ class MainActivity : ComponentActivity() {
         UsuarioRepository()
     }
 
+    private val matchRepository by lazy {
+        MatchRepository()
+    }
+
     private val authViewModel by lazy {
         AuthViewModel(usuarioRepository)
+    }
+
+    private val matchViewModel by lazy {
+        MatchViewModel(matchRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,14 +38,19 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             NomeacuerdoTheme {
+
                 val navController = rememberNavController()
+
                 val usuarioActual = authViewModel.usuarioLogueado.value
-                val rutaInicio = if (usuarioActual != null) "home" else "login"
+
+                val rutaInicio =
+                    if (usuarioActual != null) "home" else "login"
 
                 NavHost(
                     navController = navController,
                     startDestination = rutaInicio
                 ) {
+
                     composable("login") {
                         LoginScreen(navController, authViewModel)
                     }
@@ -49,7 +64,11 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("match") {
-                        MatchScreen(navController)
+                        MatchScreen(
+                            navController,
+                            matchViewModel,
+                            authViewModel
+                        )
                     }
 
                     composable("perfil") {
@@ -57,8 +76,16 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("detalle_evento/{titulo}") { backStackEntry ->
-                        val titulo = backStackEntry.arguments?.getString("titulo") ?: "Evento"
-                        DetalleEventoScreen(navController, titulo)
+
+                        val titulo =
+                            backStackEntry.arguments?.getString("titulo") ?: "Evento"
+
+                        DetalleEventoScreen(
+                            navController,
+                            titulo,
+                            matchViewModel,
+                            authViewModel
+                        )
                     }
                 }
             }

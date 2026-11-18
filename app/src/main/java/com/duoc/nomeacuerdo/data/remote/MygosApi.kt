@@ -1,5 +1,5 @@
 package com.duoc.nomeacuerdo.data.remote
-
+import com.duoc.nomeacuerdo.data.model.ResenaRemota
 import com.duoc.nomeacuerdo.data.model.EventoRemoto
 import com.duoc.nomeacuerdo.data.model.UsuarioRemoto
 import retrofit2.http.*
@@ -21,5 +21,13 @@ interface MygosApi {
 
     @GET("evento")
     suspend fun getEventos(): List<EventoRemoto>
+
+    @GET("resena")
+    suspend fun getResenas(): List<ResenaRemota>
+
+    @POST("resena")
+    suspend fun crearResena(
+        @Body resena: ResenaRemota
+    ): ResenaRemota
 }
 

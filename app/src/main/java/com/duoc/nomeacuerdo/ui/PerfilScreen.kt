@@ -11,11 +11,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,8 +48,6 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
         if (success && imageUri != null) {
             viewModel.actualizarFotoPerfil(imageUri.toString())
             Toast.makeText(context, "¡Foto guardada con éxito!", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, "Cancelaste la foto o falló la cámara.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -53,45 +56,49 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
             try {
                 val archivoFoto = File(context.filesDir, "perfil_${System.currentTimeMillis()}.jpg")
                 archivoFoto.createNewFile()
-
                 val uri = FileProvider.getUriForFile(context, context.packageName + ".provider", archivoFoto)
                 imageUri = uri
                 takePictureLauncher.launch(uri)
             } catch (e: ActivityNotFoundException) {
-                Toast.makeText(context, "El emulador no tiene una app de cámara", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "No hay app de cámara", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(context, "Error al crear archivo: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
             }
-        } else {
-            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
         }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         TextButton(onClick = { navController.popBackStack() }, modifier = Modifier.align(Alignment.Start)) { Text("< Volver") }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Mi Perfil", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 24.dp))
+
+        Text(text = "Mi Perfil", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(text = "Aquí puedes modificar tus datos personales y tu foto.", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 24.dp))
 
         Box(modifier = Modifier.size(120.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant).clickable { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }, contentAlignment = Alignment.Center) {
             val uriParaMostrar = imageUri?.toString() ?: usuario?.foto_perfil_uri
             if (!uriParaMostrar.isNullOrBlank()) {
                 AsyncImage(model = uriParaMostrar, contentDescription = "Foto", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             } else {
-                Text(text = "FOTO", fontSize = 18.sp)
+                Text(text = "Toca para\nañadir foto", fontSize = 14.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
 
-        TextButton(onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }) { Text("⚙ Editar") }
+        TextButton(onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }) { Text("Cambiar Foto") }
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre Completo") }, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium)
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("E-mail") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Correo Electrónico") }, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium)
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = pin, onValueChange = { pin = it }, label = { Text("Nueva Contraseña / PIN") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
+        OutlinedTextField(value = pin, onValueChange = { pin = it }, label = { Text("Nueva Contraseña (Opcional)") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation(), shape = MaterialTheme.shapes.medium)
 
         Spacer(modifier = Modifier.weight(1f))
-        Button(onClick = { viewModel.actualizarDatosPerfil(nombre, email, pin) }, modifier = Modifier.fillMaxWidth()) { Text("Guardar Cambios") }
-        TextButton(onClick = { viewModel.cerrarSesion(); navController.navigate("login") { popUpTo("home") { inclusive = true } } }) { Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error) }
+
+        Button(onClick = { viewModel.actualizarDatosPerfil(nombre, email, pin) }, modifier = Modifier.fillMaxWidth().height(50.dp)) {
+            Text("Guardar Cambios", fontSize = 16.sp)
+        }
+        TextButton(onClick = { viewModel.cerrarSesion(); navController.navigate("login") { popUpTo("home") { inclusive = true } } }) {
+            Text("Cerrar Sesión", color = MaterialTheme.colorScheme.error)
+        }
     }
 
     if (perfilGuardado) {

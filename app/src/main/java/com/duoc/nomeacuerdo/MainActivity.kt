@@ -4,35 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room3.Room
-import com.duoc.nomeacuerdo.model.AppDatabase
-import com.duoc.nomeacuerdo.repository.MatchRepository
 import com.duoc.nomeacuerdo.repository.UsuarioRepository
-import com.duoc.nomeacuerdo.ui.DetalleEventoScreen
-import com.duoc.nomeacuerdo.ui.EventosScreen
 import com.duoc.nomeacuerdo.ui.LoginScreen
-import com.duoc.nomeacuerdo.ui.MatchScreen
 import com.duoc.nomeacuerdo.ui.PerfilScreen
 import com.duoc.nomeacuerdo.ui.RegisterScreen
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
-import com.duoc.nomeacuerdo.viewmodel.MatchViewModel
 
 class MainActivity : ComponentActivity() {
-    private val db by lazy {
-        Room.databaseBuilder(applicationContext, AppDatabase::class.java, "mygos_db")
-            .fallbackToDestructiveMigration()
-            .build()
-    }
-
-    private val usuarioRepository by lazy { UsuarioRepository(db.usuarioDao()) }
-    private val matchRepository by lazy { MatchRepository(db.matchDao()) }
-
+    private val usuarioRepository by lazy { UsuarioRepository() }
     private val authViewModel by lazy { AuthViewModel(usuarioRepository) }
-    private val matchViewModel by lazy { MatchViewModel(matchRepository) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,13 +35,20 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = rutaInicio) {
                     composable("login") { LoginScreen(navController, authViewModel) }
                     composable("register") { RegisterScreen(navController, authViewModel) }
-                    composable("home") { EventosScreen(navController) }
-                    composable("match") { MatchScreen(navController, matchViewModel, authViewModel) }
-                    composable("perfil") { PerfilScreen(navController, authViewModel) }
-                    composable("detalle_evento/{titulo}") { backStackEntry ->
-                        val titulo = backStackEntry.arguments?.getString("titulo") ?: "Evento"
-                        DetalleEventoScreen(navController, titulo, matchViewModel, authViewModel)
+                    composable("home") {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Home en construcción")
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { navController.navigate("perfil") }) {
+                                Text("Ir a mi Perfil")
+                            }
+                        }
                     }
+                    composable("perfil") { PerfilScreen(navController, authViewModel) }
                 }
             }
         }

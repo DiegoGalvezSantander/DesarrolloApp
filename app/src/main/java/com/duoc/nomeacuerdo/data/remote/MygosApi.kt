@@ -8,8 +8,17 @@ interface MygosApi {
     suspend fun getUsuarios(): List<UsuarioRemoto>
 
     @POST("usuario")
-    suspend fun registrarUsuario(@Body usuario: UsuarioRemoto): UsuarioRemoto
+    suspend fun registrarUsuario(
+        @Body usuario: UsuarioRemoto
+    ): UsuarioRemoto
 
     @PUT("usuario/{id}")
-    suspend fun actualizarUsuario(@Path("id") id: Int, @Body usuario: UsuarioRemoto): UsuarioRemoto
+    suspend fun actualizarUsuario(
+        @Path("id") id: Int,
+        @Body usuario: UsuarioRemoto
+    ): UsuarioRemoto
+
+    @GET("evento")
+    suspend fun getEventos(): List<EventoRemoto>
 }
+

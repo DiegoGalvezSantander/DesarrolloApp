@@ -1,35 +1,125 @@
+
 package com.duoc.nomeacuerdo.ui
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
+import android.net.Uri
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.duoc.nomeacuerdo.R
+import com.duoc.nomeacuerdo.viewmodel.EventoViewModel
+import com.google.android.gms.location.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EventosScreen(navController: NavController) {
-    val dummyEventos = listOf("Deporte", "Cine", "Concierto")
+fun EventosScreen(
+    navController: NavController,
+    viewModel: EventoViewModel = viewModel()
+) {
+    val context = LocalContext.current
+
+    val listaEventos by viewModel.eventos.collectAsState()
+
+    var busqueda by remember { mutableStateOf("") }
+
+    val eventosFiltrados = listaEventos.filter {
+        it.titulo.contains(busqueda, ignoreCase = true) ||
+                it.descripcion.contains(busqueda, ignoreCase = true)
+    }
+
+    var location by remember { mutableStateOf<Location?>(null) }
+    var permisoConcedido by remember { mutableStateOf(false) }
+
+    val locationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            permisoConcedido = granted
+        }
+
+    LaunchedEffect(permisoConcedido) {
+        if (permisoConcedido) {
+            obtenerUbicacion(context) { loc ->
+                location = loc
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
-            Text(
-                "Eventos",
-                fontSize = 28.sp,
-                modifier = Modifier.padding(16.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Eventos",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                OutlinedTextField(
+                    value = busqueda,
+                    onValueChange = { busqueda = it },
+                    label = { Text("Buscar Eventos") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                TextButton(
+                    onClick = {
+                        locationPermissionLauncher.launch(
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = "Ubicacion"
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    if (location != null) {
+                        Text(
+                            "Lat: ${location!!.latitude.toInt()}, " +
+                                    "Lon: ${location!!.longitude.toInt()}"
+                        )
+                    } else {
+                        Text("Obtener mi ubicación")
+                    }
+                }
+            }
         },
+
         bottomBar = {
             NavigationBar {
+
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, null) },
                     label = { Text("Inicio") },
@@ -60,28 +150,106 @@ fun EventosScreen(navController: NavController) {
                 )
             }
         }
-    ) { padding ->
+    ) { paddingValues ->
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(dummyEventos) { evento ->
+
+            items(eventosFiltrados) { evento ->
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            navController.navigate("detalle_evento/$evento")
-                        }
-                ) {
-                    Text(
-                        text = evento,
-                        modifier = Modifier.padding(16.dp)
+                            navController.navigate(
+                                "detalle_evento/${Uri.encode(evento.titulo)}"
+                            )
+                        },
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 4.dp
                     )
+                ) {
+
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Image(
+                            painter = painterResource(
+                                id = obtenerImagen(evento.imagen)
+                            ),
+                            contentDescription = evento.titulo,
+                            modifier = Modifier
+                                .size(64.dp)
+                                .padding(end = 16.dp)
+                        )
+
+                        Column {
+
+                            Text(
+                                text = evento.titulo,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = evento.hora,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+fun obtenerImagen(nombre: String): Int {
+
+    return when (nombre.lowercase()) {
+
+        "deporte" -> R.drawable.deporte
+
+        "cine" -> R.drawable.cinee
+
+        "concierto" -> R.drawable.concierto
+
+        else -> R.drawable.logo_mygos
+    }
+}
+
+@SuppressLint("MissingPermission")
+fun obtenerUbicacion(
+    context: Context,
+    onLocation: (Location?) -> Unit
+) {
+
+    val fusedLocationClient =
+        LocationServices.getFusedLocationProviderClient(context)
+
+    val locationRequest =
+        LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            1000
+        ).build()
+
+    fusedLocationClient.requestLocationUpdates(
+        locationRequest,
+        object : LocationCallback() {
+
+            override fun onLocationResult(result: LocationResult) {
+
+                onLocation(result.lastLocation)
+
+                fusedLocationClient.removeLocationUpdates(this)
+            }
+        },
+        Looper.getMainLooper()
+    )
 }

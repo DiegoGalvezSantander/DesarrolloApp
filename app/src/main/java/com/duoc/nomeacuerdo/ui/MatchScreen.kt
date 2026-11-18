@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
@@ -51,11 +52,20 @@ fun MatchScreen(navController: NavController, viewModel: MatchViewModel, authVie
             LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(listaMatches) { resena ->
                     Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = resena.nombre_evento, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "⏰ Hora: ${resena.hora_evento}", fontSize = 16.sp)
-                            Text(text = "📍 Lugar: ${resena.direccion_evento}", fontSize = 16.sp)
+                        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = resena.nombre_evento, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(text = "⏰ Hora: ${resena.hora_evento}", fontSize = 14.sp)
+                                Text(text = "📍 Lugar: ${resena.direccion_evento}", fontSize = 14.sp)
+                            }
+                            IconButton(onClick = {
+                                if (usuario != null) {
+                                    viewModel.borrarMatch(resena.id, usuario!!.correo)
+                                }
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Eliminar Match", tint = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
                 }

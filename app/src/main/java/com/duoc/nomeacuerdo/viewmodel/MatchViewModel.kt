@@ -46,4 +46,13 @@ class MatchViewModel(private val repository: MatchRepository) : ViewModel() {
             } catch (e: Exception) {}
         }
     }
+
+    fun borrarMatch(id: Int, correo: String) {
+        viewModelScope.launch {
+            try {
+                repository.borrarMatch(id)
+                cargarMatches(correo)
+            } catch (e: Exception) {}
+        }
+    }
 }

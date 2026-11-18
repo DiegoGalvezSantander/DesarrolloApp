@@ -17,4 +17,8 @@ class MatchRepository {
         val correos = resenas.map { it.usuario_correo }
         return MygosRetrofit.api.getUsuarios().filter { it.correo in correos }
     }
+
+    suspend fun borrarMatch(id: Int) {
+        MygosRetrofit.api.borrarResena(id)
+    }
 }

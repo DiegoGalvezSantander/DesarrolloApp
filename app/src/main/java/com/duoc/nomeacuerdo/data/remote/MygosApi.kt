@@ -1,5 +1,6 @@
 package com.duoc.nomeacuerdo.data.remote
 
+import com.duoc.nomeacuerdo.data.model.EventoRemoto
 import com.duoc.nomeacuerdo.data.model.UsuarioRemoto
 import retrofit2.http.*
 

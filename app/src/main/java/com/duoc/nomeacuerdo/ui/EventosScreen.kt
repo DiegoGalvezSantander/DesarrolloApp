@@ -216,7 +216,7 @@ fun obtenerImagen(nombre: String): Int {
 
         "deporte" -> R.drawable.deporte
 
-        "cine" -> R.drawable.cinee
+        "cine" -> R.drawable.cine
 
         "concierto" -> R.drawable.concierto
 

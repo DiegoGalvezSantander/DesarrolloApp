@@ -6,5 +6,5 @@ data class ResenaRemota(
     val hora_evento: String,
     val direccion_evento: String,
     val usuario_correo: String,
-    val comentario: String?
+    val comentario: String? = null
 )

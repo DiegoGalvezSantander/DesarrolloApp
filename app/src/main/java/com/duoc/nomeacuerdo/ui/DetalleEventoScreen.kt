@@ -1,5 +1,13 @@
 package com.duoc.nomeacuerdo.ui
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -15,9 +23,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -26,7 +37,14 @@ import com.duoc.nomeacuerdo.viewmodel.EventoViewModel
 import com.duoc.nomeacuerdo.viewmodel.MatchViewModel
 
 @Composable
-fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matchViewModel: MatchViewModel, authViewModel: AuthViewModel, eventoViewModel: EventoViewModel = viewModel()) {
+fun DetalleEventoScreen(
+    navController: NavController,
+    tituloEvento: String,
+    matchViewModel: MatchViewModel,
+    authViewModel: AuthViewModel,
+    eventoViewModel: EventoViewModel = viewModel()
+) {
+    val context = LocalContext.current
     val listaEventos by eventoViewModel.eventos.collectAsState()
     val evento = listaEventos.find { it.titulo == tituloEvento }
     val usuario by authViewModel.usuarioLogueado.collectAsState()
@@ -35,7 +53,14 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
     var mostrarModal by remember { mutableStateOf(false) }
     var isPressed by remember { mutableStateOf(false) }
 
-    LaunchedEffect(tituloEvento) {
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
         matchViewModel.cargarParticipantes(tituloEvento)
     }
 
@@ -46,7 +71,9 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
     )
 
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        TextButton(onClick = { navController.popBackStack() }, modifier = Modifier.align(Alignment.Start)) { Text("< Volver a Eventos") }
+        TextButton(onClick = { navController.popBackStack() }, modifier = Modifier.align(Alignment.Start)) {
+            Text("< Volver a Eventos")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -74,20 +101,27 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(text = "Participantes (${participantes.size})", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
+        Text(
+            text = "Participantes (${participantes.size})",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start)
+        )
         Spacer(modifier = Modifier.height(12.dp))
 
         if (participantes.isEmpty()) {
-            Text(text = "Sé el primero en hacer match en este evento.", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
+            Text(
+                text = "Sé el primero en hacer match en este evento.",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.Start)
+            )
         } else {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(participantes) { participante ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
-                            modifier = Modifier
-                                .size(60.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            modifier = Modifier.size(60.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             val uriFoto = participante.foto_perfil_uri
@@ -113,16 +147,15 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
 
         Button(
             onClick = {
-                if (usuario != null && evento != null) {
+                val userActual = usuario
+                if (userActual != null && evento != null) {
                     isPressed = true
-                    matchViewModel.agregarMatch(tituloEvento, evento.hora, evento.direccion, usuario!!.correo)
+                    matchViewModel.agregarMatch(tituloEvento, evento.hora, evento.direccion, userActual.correo)
+                    mostrarNotificacion(context, tituloEvento)
                     mostrarModal = true
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .scale(scale),
+            modifier = Modifier.fillMaxWidth().height(56.dp).scale(scale),
             shape = MaterialTheme.shapes.medium
         ) {
             Text("Hacer Match", fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -131,7 +164,10 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
 
     if (mostrarModal) {
         AlertDialog(
-            onDismissRequest = { mostrarModal = false; isPressed = false },
+            onDismissRequest = {
+                mostrarModal = false
+                isPressed = false
+            },
             title = { Text("¡Match Realizado!") },
             text = { Text("Te has registrado con éxito en el evento: $tituloEvento") },
             confirmButton = {
@@ -142,5 +178,24 @@ fun DetalleEventoScreen(navController: NavController, tituloEvento: String, matc
                 }) { Text("Ir a mis Matches") }
             }
         )
+    }
+}
+
+fun mostrarNotificacion(context: Context, nombreEvento: String) {
+    val channelId = "match_channel"
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(channelId, "Matches", NotificationManager.IMPORTANCE_HIGH)
+        notificationManager.createNotificationChannel(channel)
+    }
+    val notification = NotificationCompat.Builder(context, channelId)
+        .setSmallIcon(android.R.drawable.ic_dialog_info)
+        .setContentTitle("¡Nuevo Match en Mygos!")
+        .setContentText("Has hecho match en el evento: $nombreEvento")
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setAutoCancel(true)
+        .build()
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+        notificationManager.notify(1, notification)
     }
 }

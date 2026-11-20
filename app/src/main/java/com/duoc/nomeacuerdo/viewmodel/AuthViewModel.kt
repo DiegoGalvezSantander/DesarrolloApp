@@ -1,5 +1,6 @@
 package com.duoc.nomeacuerdo.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.nomeacuerdo.data.model.UsuarioRemoto
@@ -8,27 +9,45 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
+class AuthViewModel(private val repository: UsuarioRepository, private val context: Context) : ViewModel() {
+
+    private val prefs = context.getSharedPreferences("mygos_session", Context.MODE_PRIVATE)
+
     private val _loginCorreo = MutableStateFlow("")
     val loginCorreo: StateFlow<String> = _loginCorreo
+
     private val _loginPassword = MutableStateFlow("")
     val loginPassword: StateFlow<String> = _loginPassword
+
     private val _loginError = MutableStateFlow<String?>(null)
     val loginError: StateFlow<String?> = _loginError
+
     private val _usuarioLogueado = MutableStateFlow<UsuarioRemoto?>(null)
     val usuarioLogueado: StateFlow<UsuarioRemoto?> = _usuarioLogueado
 
     private val _regNombre = MutableStateFlow("")
     val regNombre: StateFlow<String> = _regNombre
+
     private val _regCorreo = MutableStateFlow("")
     val regCorreo: StateFlow<String> = _regCorreo
+
     private val _regPassword = MutableStateFlow("")
     val regPassword: StateFlow<String> = _regPassword
+
     private val _regError = MutableStateFlow<String?>(null)
     val regError: StateFlow<String?> = _regError
 
     private val _perfilGuardado = MutableStateFlow(false)
     val perfilGuardado: StateFlow<Boolean> = _perfilGuardado
+
+    init {
+        val correoGuardado = prefs.getString("correo_logueado", null)
+        if (correoGuardado != null) {
+            viewModelScope.launch {
+                _usuarioLogueado.value = repository.obtenerUsuarioPorCorreo(correoGuardado)
+            }
+        }
+    }
 
     fun onLoginCorreoChange(correo: String) { _loginCorreo.value = correo }
     fun onLoginPasswordChange(pass: String) { _loginPassword.value = pass }
@@ -48,6 +67,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
                 val usuario = repository.login(correo, pass)
                 if (usuario != null) {
                     _usuarioLogueado.value = usuario
+                    prefs.edit().putString("correo_logueado", usuario.correo).apply()
                     _loginError.value = null
                 } else {
                     _loginError.value = "Correo o contraseña incorrectos"
@@ -76,6 +96,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
                 val nuevoUsuario = UsuarioRemoto(nombre_completo = nombre, correo = correo, password = pass)
                 val creado = repository.registrarUsuario(nuevoUsuario)
                 _usuarioLogueado.value = creado
+                prefs.edit().putString("correo_logueado", creado.correo).apply()
                 _regError.value = null
             } catch (e: Exception) {
                 _regError.value = "Error al registrar: ${e.message}"
@@ -91,6 +112,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
                 val usuarioModificado = usuarioActual.copy(nombre_completo = nuevoNombre, correo = nuevoCorreo, password = passwordFinal)
                 val actualizado = repository.actualizarUsuario(usuarioModificado)
                 _usuarioLogueado.value = actualizado
+                prefs.edit().putString("correo_logueado", actualizado.correo).apply()
                 _perfilGuardado.value = true
             } catch (e: Exception) {
                 _perfilGuardado.value = false
@@ -113,6 +135,7 @@ class AuthViewModel(private val repository: UsuarioRepository) : ViewModel() {
 
     fun cerrarSesion() {
         _usuarioLogueado.value = null
+        prefs.edit().remove("correo_logueado").apply()
         _loginCorreo.value = ""
         _loginPassword.value = ""
     }

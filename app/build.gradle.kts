@@ -1,8 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.room3)
 }
 
 android {
@@ -15,7 +13,6 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -25,10 +22,12 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
     }
@@ -38,10 +37,6 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
-}
-
-room3 {
-    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -55,15 +50,10 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.room3.runtime)
-    ksp(libs.androidx.room3.compiler)
     implementation(libs.coil.compose)
-    implementation(libs.play.services.location)
     implementation(libs.androidx.compose.ui.text)
-
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

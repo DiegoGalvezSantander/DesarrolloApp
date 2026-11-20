@@ -1,10 +1,15 @@
 package com.duoc.nomeacuerdo.repository
 
 import com.duoc.nomeacuerdo.data.model.EventoRemoto
+import com.duoc.nomeacuerdo.data.remote.MygosApi
 import com.duoc.nomeacuerdo.data.remote.MygosRetrofit
 
-class EventoRepository {
+interface EventoRepository {
+    suspend fun getEventos(): List<EventoRemoto>
+}
 
-    suspend fun getEventos(): List<EventoRemoto> =
-        MygosRetrofit.api.getEventos()
+class EventoRepositoryImpl(
+    private val api: MygosApi = MygosRetrofit.api
+) : EventoRepository {
+    override suspend fun getEventos(): List<EventoRemoto> = api.getEventos()
 }

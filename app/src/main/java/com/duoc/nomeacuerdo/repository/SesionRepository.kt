@@ -16,7 +16,15 @@ class SesionRepository(context: Context) {
         return sesionPrefs.getString("correo_logueado", null)
     }
 
+    fun guardarFotoPerfilLocal(uri: String) {
+        sesionPrefs.edit().putString("foto_perfil_local", uri).apply()
+    }
+
+    fun obtenerFotoPerfilLocal(): String? {
+        return sesionPrefs.getString("foto_perfil_local", null)
+    }
+
     fun borrarSesion() {
-        sesionPrefs.edit().remove("correo_logueado").apply()
+        sesionPrefs.edit().remove("correo_logueado").remove("foto_perfil_local").apply()
     }
 }

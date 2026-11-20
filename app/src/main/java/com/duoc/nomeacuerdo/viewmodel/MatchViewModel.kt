@@ -16,11 +16,14 @@ class MatchViewModel(private val repository: MatchRepository) : ViewModel() {
     private val _participantes = MutableStateFlow<List<UsuarioRemoto>>(emptyList())
     val participantes: StateFlow<List<UsuarioRemoto>> = _participantes
 
+    private var ultimoEventoCargado: String? = null
+
     fun cargarMatches(correo: String, forzarRecarga: Boolean = false) {
         if (!forzarRecarga && _matches.value.isNotEmpty()) return
 
         viewModelScope.launch {
             try {
+                _matches.value = emptyList()
                 _matches.value = repository.obtenerMatches(correo)
             } catch (e: Exception) {
                 _matches.value = emptyList()
@@ -29,7 +32,10 @@ class MatchViewModel(private val repository: MatchRepository) : ViewModel() {
     }
 
     fun cargarParticipantes(nombreEvento: String, forzarRecarga: Boolean = false) {
-        if (!forzarRecarga && _participantes.value.isNotEmpty()) return
+        if (!forzarRecarga && ultimoEventoCargado == nombreEvento && _participantes.value.isNotEmpty()) return
+
+        ultimoEventoCargado = nombreEvento
+        _participantes.value = emptyList()
 
         viewModelScope.launch {
             try {

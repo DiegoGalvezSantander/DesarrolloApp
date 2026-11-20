@@ -41,13 +41,15 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
     var nombre by remember(usuario) { mutableStateOf(usuario?.nombre_completo ?: "") }
     var email by remember(usuario) { mutableStateOf(usuario?.correo ?: "") }
     var nuevaContrasena by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var uriTemporal by remember { mutableStateOf<Uri?>(null) }
+
+    val uriParaMostrar = usuario?.foto_perfil_uri
 
     val takePictureLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success && imageUri != null) {
-            viewModel.actualizarFotoPerfil(imageUri.toString())
+        if (success && uriTemporal != null) {
+            viewModel.actualizarFotoPerfil(uriTemporal.toString())
             Toast.makeText(context, "¡Foto guardada con éxito!", Toast.LENGTH_SHORT).show()
         }
     }
@@ -64,7 +66,7 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
                     context.packageName + ".provider",
                     archivoFoto
                 )
-                imageUri = uri
+                uriTemporal = uri
                 takePictureLauncher.launch(uri)
             } catch (e: ActivityNotFoundException) {
                 Toast.makeText(context, "No hay app de cámara", Toast.LENGTH_SHORT).show()
@@ -101,7 +103,6 @@ fun PerfilScreen(navController: NavController, viewModel: AuthViewModel) {
                 .clickable { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) },
             contentAlignment = Alignment.Center
         ) {
-            val uriParaMostrar = imageUri?.toString() ?: usuario?.foto_perfil_uri
             if (!uriParaMostrar.isNullOrBlank()) {
                 AsyncImage(
                     model = uriParaMostrar,

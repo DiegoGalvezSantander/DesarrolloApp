@@ -71,7 +71,7 @@ fun EventosScreen(navController: NavController, viewModel: EventoViewModel = vie
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Image(painter = painterResource(id = obtenerImagen(evento.imagen)), contentDescription = evento.titulo, modifier = Modifier.size(64.dp).padding(end = 16.dp))
+                            Image(painter = painterResource(id = obtenerImagen(evento.imagen, evento.titulo)), contentDescription = evento.titulo, modifier = Modifier.size(64.dp).padding(end = 16.dp))
                             Column {
                                 Text(text = evento.titulo, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                                 Text(text = "Horario: ${evento.hora}", fontSize = 14.sp, color = Color.Gray)
@@ -84,11 +84,13 @@ fun EventosScreen(navController: NavController, viewModel: EventoViewModel = vie
     }
 }
 
-fun obtenerImagen(nombre: String): Int {
-    return when (nombre.lowercase()) {
-        "deporte" -> R.drawable.deporte
-        "cine" -> R.drawable.cine
-        "concierto" -> R.drawable.concierto
+fun obtenerImagen(nombre: String?, titulo: String): Int {
+    val valor = (nombre ?: "").lowercase().trim()
+    val tituloMin = titulo.lowercase().trim()
+    return when {
+        valor.contains("deporte") || tituloMin.contains("deporte") -> R.drawable.deporte
+        valor.contains("cine") || tituloMin.contains("cine") -> R.drawable.cine
+        valor.contains("concierto") || tituloMin.contains("concierto") -> R.drawable.concierto
         else -> R.drawable.logo_mygos
     }
 }

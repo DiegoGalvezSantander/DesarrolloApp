@@ -27,7 +27,9 @@ fun MatchScreen(navController: NavController, viewModel: MatchViewModel, authVie
     val usuario by authViewModel.usuarioLogueado.collectAsState()
 
     LaunchedEffect(usuario) {
-        if (usuario != null) viewModel.cargarMatches(usuario!!.correo)
+        if (usuario != null) {
+            viewModel.cargarMatches(usuario!!.correo, true)
+        }
     }
 
     Scaffold(

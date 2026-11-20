@@ -3,6 +3,7 @@ package com.duoc.nomeacuerdo.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.nomeacuerdo.data.model.UsuarioRemoto
+import com.duoc.nomeacuerdo.data.remote.MygosRetrofit
 import com.duoc.nomeacuerdo.repository.SesionRepository
 import com.duoc.nomeacuerdo.repository.UsuarioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +46,15 @@ class AuthViewModel(
         val correoGuardado = sesionRepository.obtenerCorreoSesion()
         if (correoGuardado != null) {
             viewModelScope.launch {
-                _usuarioLogueado.value = repository.obtenerUsuarioPorCorreo(correoGuardado)
+                val usuario = repository.obtenerUsuarioPorCorreo(correoGuardado)
+                if (usuario != null) {
+                    val fotoLocal = sesionRepository.obtenerFotoPerfilLocal()
+                    if (fotoLocal != null) {
+                        _usuarioLogueado.value = usuario.copy(foto_perfil_uri = fotoLocal)
+                    } else {
+                        _usuarioLogueado.value = usuario
+                    }
+                }
             }
         }
     }
@@ -79,9 +88,15 @@ class AuthViewModel(
         }
         viewModelScope.launch {
             try {
+                MygosRetrofit.clearCache()
                 val usuario = repository.login(correo, password)
                 if (usuario != null) {
-                    _usuarioLogueado.value = usuario
+                    val fotoLocal = sesionRepository.obtenerFotoPerfilLocal()
+                    if (fotoLocal != null) {
+                        _usuarioLogueado.value = usuario.copy(foto_perfil_uri = fotoLocal)
+                    } else {
+                        _usuarioLogueado.value = usuario
+                    }
                     sesionRepository.guardarCorreoSesion(usuario.correo)
                     _loginError.value = null
                 } else {
@@ -105,6 +120,7 @@ class AuthViewModel(
 
         viewModelScope.launch {
             try {
+                MygosRetrofit.clearCache()
                 _registroError.value = null
                 val nuevoUsuario = UsuarioRemoto(
                     nombre_completo = nombre,
@@ -115,7 +131,7 @@ class AuthViewModel(
                 _usuarioLogueado.value = creado
                 sesionRepository.guardarCorreoSesion(creado.correo)
             } catch (e: Exception) {
-                _registroError.value = "Error al registrar. Revisa si el correo ya existe o intenta de nuevo."
+                _registroError.value = "Error al registrar. Revisa si el correo ya existe."
             }
         }
     }
@@ -147,11 +163,15 @@ class AuthViewModel(
 
     fun actualizarFotoPerfil(uri: String) {
         val usuarioActual = _usuarioLogueado.value ?: return
+        val usuarioModificado = usuarioActual.copy(foto_perfil_uri = uri)
+
+        _usuarioLogueado.value = usuarioModificado
+        sesionRepository.guardarFotoPerfilLocal(uri)
+
         viewModelScope.launch {
             try {
-                val usuarioModificado = usuarioActual.copy(foto_perfil_uri = uri)
                 val actualizado = repository.actualizarUsuario(usuarioModificado)
-                _usuarioLogueado.value = actualizado
+                _usuarioLogueado.value = actualizado.copy(foto_perfil_uri = uri)
             } catch (e: Exception) {
             }
         }
@@ -164,6 +184,7 @@ class AuthViewModel(
     fun cerrarSesion() {
         _usuarioLogueado.value = null
         sesionRepository.borrarSesion()
+        MygosRetrofit.clearCache()
         _loginCorreo.value = ""
         _loginPassword.value = ""
     }

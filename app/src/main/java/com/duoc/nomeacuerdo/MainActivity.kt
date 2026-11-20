@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.duoc.nomeacuerdo.data.remote.MygosRetrofit
 import com.duoc.nomeacuerdo.repository.MatchRepository
 import com.duoc.nomeacuerdo.repository.SesionRepository
 import com.duoc.nomeacuerdo.repository.UsuarioRepository
@@ -19,7 +20,6 @@ import com.duoc.nomeacuerdo.ui.RegisterScreen
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
 import com.duoc.nomeacuerdo.viewmodel.MatchViewModel
-import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
     private val usuarioRepository by lazy { UsuarioRepository() }
@@ -30,11 +30,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MygosRetrofit.init(applicationContext)
         enableEdgeToEdge()
         setContent {
             NomeacuerdoTheme {
                 val navController = rememberNavController()
-                val usuarioActual = authViewModel.usuarioLogueado.collectAsState().value
+                val usuarioActual = authViewModel.usuarioLogueado.value
                 val rutaInicio = if (usuarioActual != null) "home" else "login"
                 NavHost(navController = navController, startDestination = rutaInicio) {
                     composable("login") { LoginScreen(navController, authViewModel) }

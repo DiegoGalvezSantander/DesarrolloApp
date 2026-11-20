@@ -25,10 +25,10 @@ interface MygosApi {
     suspend fun actualizarUsuario(@Path("id") id: Int, @Body usuario: UsuarioRemoto): UsuarioRemoto
 
     @GET("resena")
-    suspend fun getResenasPorCorreo(@Query("usuario_correo") correo: String): List<ResenaRemota>
-
-    @GET("resena")
-    suspend fun getResenasPorEvento(@Query("nombre_evento") nombreEvento: String): List<ResenaRemota>
+    suspend fun getTodasLasResenas(
+        @Query("usuario_correo") usuarioCorreo: String? = null,
+        @Query("nombre_evento") nombreEvento: String? = null
+    ): List<ResenaRemota>
 
     @POST("resena")
     suspend fun crearResena(@Body resena: ResenaRemota): ResenaRemota

@@ -16,9 +16,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:/Users/diego/OneDrive/Escritorio/mygos-release.jks")
+            storePassword = "Mygos2024"
+            keyAlias = "key0"
+            keyPassword = "Mygos2024"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

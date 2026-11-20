@@ -26,7 +26,9 @@ fun MatchScreen(navController: NavController, viewModel: MatchViewModel, authVie
     val listaMatches by viewModel.matches.collectAsState()
     val usuario by authViewModel.usuarioLogueado.collectAsState()
 
-    LaunchedEffect(usuario) { if (usuario != null) viewModel.cargarMatches(usuario!!.correo) }
+    LaunchedEffect(usuario) {
+        if (usuario != null) viewModel.cargarMatches(usuario!!.correo)
+    }
 
     Scaffold(
         topBar = {
@@ -61,7 +63,7 @@ fun MatchScreen(navController: NavController, viewModel: MatchViewModel, authVie
                             }
                             IconButton(onClick = {
                                 if (usuario != null) {
-                                    viewModel.borrarMatch(resena.id, usuario!!.correo)
+                                    viewModel.borrarMatch(resena.id, usuario!!.correo, resena.nombre_evento)
                                 }
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = "Eliminar Match", tint = MaterialTheme.colorScheme.error)

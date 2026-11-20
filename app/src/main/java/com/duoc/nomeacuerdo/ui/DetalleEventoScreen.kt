@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -48,12 +49,13 @@ fun DetalleEventoScreen(
 
     var mostrarModal by remember { mutableStateOf(false) }
     var isPressed by remember { mutableStateOf(false) }
+    var estaCargando by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(tituloEvento) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     context,
@@ -63,7 +65,7 @@ fun DetalleEventoScreen(
                 permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-        matchViewModel.cargarParticipantes(tituloEvento)
+        matchViewModel.cargarParticipantes(tituloEvento, true)
     }
 
     val scale by animateFloatAsState(
@@ -183,7 +185,8 @@ fun DetalleEventoScreen(
 
         Button(
             onClick = {
-                if (usuario != null && evento != null) {
+                if (usuario != null && evento != null && !estaCargando) {
+                    estaCargando = true
                     isPressed = true
                     matchViewModel.agregarMatch(
                         tituloEvento,
@@ -192,13 +195,22 @@ fun DetalleEventoScreen(
                         usuario!!.correo
                     )
                     NotificacionHelper.mostrarNotificacionMatch(context, tituloEvento)
+                    estaCargando = false
                     mostrarModal = true
                 }
             },
             modifier = Modifier.fillMaxWidth().height(56.dp).scale(scale),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
+            enabled = !estaCargando
         ) {
-            Text("Hacer Match", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            if (estaCargando) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                Text("Hacer Match", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 

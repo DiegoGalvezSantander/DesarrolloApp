@@ -28,6 +28,7 @@ import com.duoc.nomeacuerdo.viewmodel.EventoViewModel
 @Composable
 fun EventosScreen(navController: NavController, viewModel: EventoViewModel = viewModel()) {
     val listaEventos by viewModel.eventos.collectAsState()
+    val error by viewModel.error.collectAsState()
     var busqueda by remember { mutableStateOf("") }
     val eventosFiltrados = listaEventos.filter { it.titulo.contains(busqueda, ignoreCase = true) || it.descripcion.contains(busqueda, ignoreCase = true) }
 
@@ -54,17 +55,27 @@ fun EventosScreen(navController: NavController, viewModel: EventoViewModel = vie
             }
         }
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(eventosFiltrados) { evento ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().clickable { navController.navigate("detalle_evento/${Uri.encode(evento.titulo)}") },
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Image(painter = painterResource(id = obtenerImagen(evento.imagen)), contentDescription = evento.titulo, modifier = Modifier.size(64.dp).padding(end = 16.dp))
-                        Column {
-                            Text(text = evento.titulo, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text(text = "Horario: ${evento.hora}", fontSize = 14.sp, color = Color.Gray)
+        if (error != null) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                Text(text = error!!, color = Color.Red, modifier = Modifier.padding(16.dp))
+            }
+        } else if (eventosFiltrados.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                Text(text = "No se encontraron eventos", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(eventosFiltrados) { evento ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { navController.navigate("detalle_evento/${Uri.encode(evento.titulo)}") },
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Image(painter = painterResource(id = obtenerImagen(evento.imagen)), contentDescription = evento.titulo, modifier = Modifier.size(64.dp).padding(end = 16.dp))
+                            Column {
+                                Text(text = evento.titulo, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                Text(text = "Horario: ${evento.hora}", fontSize = 14.sp, color = Color.Gray)
+                            }
                         }
                     }
                 }

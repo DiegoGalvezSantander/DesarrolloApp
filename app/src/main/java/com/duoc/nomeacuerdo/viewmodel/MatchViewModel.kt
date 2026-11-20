@@ -16,7 +16,9 @@ class MatchViewModel(private val repository: MatchRepository) : ViewModel() {
     private val _participantes = MutableStateFlow<List<UsuarioRemoto>>(emptyList())
     val participantes: StateFlow<List<UsuarioRemoto>> = _participantes
 
-    fun cargarMatches(correo: String) {
+    fun cargarMatches(correo: String, forzarRecarga: Boolean = false) {
+        if (!forzarRecarga && _matches.value.isNotEmpty()) return
+
         viewModelScope.launch {
             try {
                 _matches.value = repository.obtenerMatches(correo)
@@ -26,7 +28,9 @@ class MatchViewModel(private val repository: MatchRepository) : ViewModel() {
         }
     }
 
-    fun cargarParticipantes(nombreEvento: String) {
+    fun cargarParticipantes(nombreEvento: String, forzarRecarga: Boolean = false) {
+        if (!forzarRecarga && _participantes.value.isNotEmpty()) return
+
         viewModelScope.launch {
             try {
                 _participantes.value = repository.obtenerParticipantes(nombreEvento)
@@ -41,17 +45,20 @@ class MatchViewModel(private val repository: MatchRepository) : ViewModel() {
             try {
                 val nuevaResena = ResenaRemota(nombre_evento = nombreEvento, hora_evento = hora, direccion_evento = direccion, usuario_correo = correo)
                 repository.registrarMatch(nuevaResena)
-                cargarMatches(correo)
-                cargarParticipantes(nombreEvento)
+                cargarMatches(correo, true)
+                cargarParticipantes(nombreEvento, true)
             } catch (e: Exception) {}
         }
     }
 
-    fun borrarMatch(id: Int, correo: String) {
+    fun borrarMatch(id: Int, correo: String, nombreEvento: String? = null) {
         viewModelScope.launch {
             try {
                 repository.borrarMatch(id)
-                cargarMatches(correo)
+                cargarMatches(correo, true)
+                if (nombreEvento != null) {
+                    cargarParticipantes(nombreEvento, true)
+                }
             } catch (e: Exception) {}
         }
     }

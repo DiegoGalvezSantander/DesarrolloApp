@@ -16,16 +16,24 @@ class EventoViewModel(
     private val _eventos = MutableStateFlow<List<EventoRemoto>>(emptyList())
     val eventos: StateFlow<List<EventoRemoto>> = _eventos
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
     init {
         cargarEventos()
     }
 
-    fun cargarEventos() {
+    fun cargarEventos(forzarRecarga: Boolean = false) {
+        if (!forzarRecarga && _eventos.value.isNotEmpty()) return
+
         viewModelScope.launch {
             try {
                 _eventos.value = repository.getEventos()
+                _error.value = null
             } catch (e: Exception) {
-                _eventos.value = emptyList()
+                if (_eventos.value.isEmpty()) {
+                    _error.value = "Error de red al cargar eventos."
+                }
             }
         }
     }

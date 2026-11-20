@@ -97,17 +97,15 @@ class AuthViewModel(
         val nombre = _registroNombre.value
         val correo = _registroCorreo.value
         val password = _registroPassword.value
+
         if (nombre.isBlank() || correo.isBlank() || password.isBlank()) {
             _registroError.value = "Todos los campos son obligatorios"
             return
         }
+
         viewModelScope.launch {
             try {
-                val existe = repository.obtenerUsuarioPorCorreo(correo)
-                if (existe != null) {
-                    _registroError.value = "Este correo ya está registrado"
-                    return@launch
-                }
+                _registroError.value = null
                 val nuevoUsuario = UsuarioRemoto(
                     nombre_completo = nombre,
                     correo = correo,
@@ -116,9 +114,8 @@ class AuthViewModel(
                 val creado = repository.registrarUsuario(nuevoUsuario)
                 _usuarioLogueado.value = creado
                 sesionRepository.guardarCorreoSesion(creado.correo)
-                _registroError.value = null
             } catch (e: Exception) {
-                _registroError.value = "Error al registrar: ${e.message}"
+                _registroError.value = "Error al registrar. Revisa si el correo ya existe o intenta de nuevo."
             }
         }
     }

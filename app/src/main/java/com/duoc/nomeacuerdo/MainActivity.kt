@@ -4,22 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.duoc.nomeacuerdo.repository.MatchRepository
+import com.duoc.nomeacuerdo.repository.SesionRepository
 import com.duoc.nomeacuerdo.repository.UsuarioRepository
-import com.duoc.nomeacuerdo.ui.*
+import com.duoc.nomeacuerdo.ui.DetalleEventoScreen
+import com.duoc.nomeacuerdo.ui.EventosScreen
+import com.duoc.nomeacuerdo.ui.LoginScreen
+import com.duoc.nomeacuerdo.ui.MatchScreen
+import com.duoc.nomeacuerdo.ui.PerfilScreen
+import com.duoc.nomeacuerdo.ui.RegisterScreen
 import com.duoc.nomeacuerdo.ui.theme.NomeacuerdoTheme
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
 import com.duoc.nomeacuerdo.viewmodel.MatchViewModel
+import androidx.compose.runtime.collectAsState
 
 class MainActivity : ComponentActivity() {
     private val usuarioRepository by lazy { UsuarioRepository() }
     private val matchRepository by lazy { MatchRepository() }
-    private val authViewModel by lazy { AuthViewModel(usuarioRepository, applicationContext) }
+    private val sesionRepository by lazy { SesionRepository(applicationContext) }
+    private val authViewModel by lazy { AuthViewModel(usuarioRepository, sesionRepository) }
     private val matchViewModel by lazy { MatchViewModel(matchRepository) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NomeacuerdoTheme {
                 val navController = rememberNavController()
-                val usuarioActual by authViewModel.usuarioLogueado.collectAsState()
+                val usuarioActual = authViewModel.usuarioLogueado.collectAsState().value
                 val rutaInicio = if (usuarioActual != null) "home" else "login"
                 NavHost(navController = navController, startDestination = rutaInicio) {
                     composable("login") { LoginScreen(navController, authViewModel) }

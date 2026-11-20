@@ -1,9 +1,6 @@
 package com.duoc.nomeacuerdo.ui
 
 import android.Manifest
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,17 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.duoc.nomeacuerdo.utils.NotificacionHelper
 import com.duoc.nomeacuerdo.viewmodel.AuthViewModel
 import com.duoc.nomeacuerdo.viewmodel.EventoViewModel
 import com.duoc.nomeacuerdo.viewmodel.MatchViewModel
@@ -53,11 +49,17 @@ fun DetalleEventoScreen(
     var mostrarModal by remember { mutableStateOf(false) }
     var isPressed by remember { mutableStateOf(false) }
 
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
 
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
@@ -70,8 +72,14 @@ fun DetalleEventoScreen(
         label = "scaleAnimation"
     )
 
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        TextButton(onClick = { navController.popBackStack() }, modifier = Modifier.align(Alignment.Start)) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.align(Alignment.Start)
+        ) {
             Text("< Volver a Eventos")
         }
 
@@ -82,20 +90,37 @@ fun DetalleEventoScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
-                Text(text = "Evento", fontSize = 14.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "Evento",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
                 Text(text = tituloEvento, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(text = "Horario:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(text = evento?.hora ?: "No definido", fontSize = 16.sp, color = Color.Gray)
+                Text(
+                    text = evento?.hora ?: "No definido",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(text = "Dirección:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(text = evento?.direccion ?: "No definida", fontSize = 16.sp, color = Color.Gray)
+                Text(
+                    text = evento?.direccion ?: "No definida",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(text = "Descripción:", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(text = evento?.descripcion ?: "Sin descripción", fontSize = 16.sp, color = Color.Gray)
+                Text(
+                    text = evento?.descripcion ?: "Sin descripción",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
 
@@ -113,7 +138,7 @@ fun DetalleEventoScreen(
             Text(
                 text = "Sé el primero en hacer match en este evento.",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Start)
             )
         } else {
@@ -121,7 +146,10 @@ fun DetalleEventoScreen(
                 items(participantes) { participante ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
-                            modifier = Modifier.size(60.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             val uriFoto = participante.foto_perfil_uri
@@ -133,11 +161,19 @@ fun DetalleEventoScreen(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
-                                Text(text = participante.nombre_completo.take(1).uppercase(), fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                                Text(
+                                    text = participante.nombre_completo.take(1).uppercase(),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp
+                                )
                             }
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = participante.nombre_completo.split(" ").firstOrNull() ?: "User", fontSize = 12.sp)
+                        Text(
+                            text = participante.nombre_completo.split(" ")
+                                .firstOrNull() ?: "User",
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
@@ -147,11 +183,15 @@ fun DetalleEventoScreen(
 
         Button(
             onClick = {
-                val userActual = usuario
-                if (userActual != null && evento != null) {
+                if (usuario != null && evento != null) {
                     isPressed = true
-                    matchViewModel.agregarMatch(tituloEvento, evento.hora, evento.direccion, userActual.correo)
-                    mostrarNotificacion(context, tituloEvento)
+                    matchViewModel.agregarMatch(
+                        tituloEvento,
+                        evento.hora,
+                        evento.direccion,
+                        usuario!!.correo
+                    )
+                    NotificacionHelper.mostrarNotificacionMatch(context, tituloEvento)
                     mostrarModal = true
                 }
             },
@@ -175,27 +215,10 @@ fun DetalleEventoScreen(
                     mostrarModal = false
                     isPressed = false
                     navController.navigate("match") { popUpTo("home") { inclusive = true } }
-                }) { Text("Ir a mis Matches") }
+                }) {
+                    Text("Ir a mis Matches")
+                }
             }
         )
-    }
-}
-
-fun mostrarNotificacion(context: Context, nombreEvento: String) {
-    val channelId = "match_channel"
-    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channel = NotificationChannel(channelId, "Matches", NotificationManager.IMPORTANCE_HIGH)
-        notificationManager.createNotificationChannel(channel)
-    }
-    val notification = NotificationCompat.Builder(context, channelId)
-        .setSmallIcon(android.R.drawable.ic_dialog_info)
-        .setContentTitle("¡Nuevo Match en Mygos!")
-        .setContentText("Has hecho match en el evento: $nombreEvento")
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setAutoCancel(true)
-        .build()
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-        notificationManager.notify(1, notification)
     }
 }

@@ -2,7 +2,6 @@ package com.duoc.nomeacuerdo.repository
 
 import com.duoc.nomeacuerdo.data.model.UsuarioRemoto
 import com.duoc.nomeacuerdo.data.remote.MygosRetrofit
-import retrofit2.HttpException
 
 class UsuarioRepository {
 
@@ -13,7 +12,13 @@ class UsuarioRepository {
 
     suspend fun login(correo: String, password: String): UsuarioRemoto? {
         return try {
-            MygosRetrofit.api.loginUsuario(correo, password).firstOrNull()
+            val listaUsuarios = MygosRetrofit.api.loginUsuario(correo, password)
+
+            val correoLimpio = correo.trim().lowercase()
+
+            listaUsuarios.find {
+                it.correo.trim().lowercase() == correoLimpio && it.password == password
+            }
         } catch (e: Exception) {
             null
         }
@@ -21,7 +26,9 @@ class UsuarioRepository {
 
     suspend fun obtenerUsuarioPorCorreo(correo: String): UsuarioRemoto? {
         return try {
-            MygosRetrofit.api.getUsuarioPorCorreo(correo).firstOrNull()
+            val listaUsuarios = MygosRetrofit.api.getUsuarioPorCorreo(correo)
+            val correoLimpio = correo.trim().lowercase()
+            listaUsuarios.find { it.correo.trim().lowercase() == correoLimpio }
         } catch (e: Exception) {
             null
         }

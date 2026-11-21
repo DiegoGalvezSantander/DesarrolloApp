@@ -1,34 +1,38 @@
-# Mygos - Conecta con tu plan ideal
+# Mygos - Encuentra tu Match en Eventos
 
-*Integrantes del equipo:*
-- Diego Gálvez
-- Javiera Cortés
-- Michelle Serrano
+Mygos es una aplicación móvil desarrollada en Android con Jetpack Compose que permite a los usuarios explorar eventos (deportes, cine, conciertos), registrarse, y hacer "Match" con otras personas interesadas en el mismo evento. La aplicación consume una API externa y base de datos en la nube a través de XANO.
 
-*Asignatura:* DSY1105 - Desarrollo de Aplicaciones Móviles
+## 👥 Integrantes
+*   Michelle Serrano
+*   Javiera Cortes
+*   Diego Gálvez
 
-##  Descripción del Proyecto
-Mygos es una aplicación móvil nativa para Android desarrollada en Kotlin. Su objetivo es conectar a personas con intereses similares a través de eventos de deporte, cine y conciertos, permitiendo hacer "Match" con otros asistentes.
+## ⚙️ Funcionalidades
+*   **Autenticación:** Registro e inicio de sesión de usuarios con persistencia de sesión local.
+*   **Eventos:** Listado de eventos con imágenes, buscador integrado y sistema de caché (OkHttp) para evitar latencia.
+*   **Match:** Posibilidad de unirse a un evento (Hacer Match) y ver los participantes en tiempo real.
+*   **Perfil de Usuario:** Actualización de nombre, correo, contraseña y cambio de foto de perfil.
+*   **Recursos Nativos:** Uso de la cámara del dispositivo para la foto de perfil (FileProvider) y notificaciones locales al hacer Match.
+*   **Interfaz:** Ícono de aplicación personalizado y paleta de colores acorde a la marca.
 
-##  Arquitectura y Tecnologías
-El proyecto sigue estrictamente el patrón de diseño *MVVM (Model-View-ViewModel)*:
-- *Model:* Entidades de Room (Usuario, Match) y DAOs.
-- *View:* Interfaces de usuario creadas con Jetpack Compose.
-- *ViewModel:* AuthViewModel y MatchViewModel manejan el estado de la UI.
-- *Repository:* UsuarioRepository y MatchRepository encapsulan el acceso a los datos locales.
-- *Navegación:* NavHost y rememberNavController.
+## 🔗 Endpoints Utilizados (XANO API)
+La aplicación se conecta a XANO (Base de datos y Backend) mediante Retrofit. Los endpoints utilizados son:
 
-##  Funcionalidades Implementadas
-- *Formularios validados:* Login y Registro con retroalimentación visual de errores.
-- *Persistencia Local (Room):* Almacenamiento de usuarios, matches y sesión activa.
-- *Recursos Nativos:*
-  - *Cámara:* Para tomar y actualizar la foto de perfil.
-  - *GPS:* Para obtener la ubicación del usuario en la pantalla principal.
-- *Animaciones y Modales:* Animación de escala en el botón de "Hacer Match" y AlertDialog de confirmación.
-- *Diseño UI/UX:* Paleta de colores personalizada (Material Design 3) y navegación fluida.
+**Usuarios:**
+*   `GET /usuario` (Filtrado por correo y contraseña para Login)
+*   `POST /usuario` (Registro de nuevos usuarios)
+*   `PUT /usuario/{id}` (Actualización de datos y foto de perfil)
 
-##  Cómo ejecutar el proyecto
-1. Clonar este repositorio.
-2. Abrir el proyecto en Android Studio.
-3. Sincronizar Gradle.
-4. Ejecutar en un emulador o dispositivo físico con Android 7.0 (API 24) o superior.
+**Eventos:**
+*   `GET /evento` (Listado general de eventos)
+
+**Matches (Reseñas):**
+*   `GET /resena` (Filtrado por correo para "Mis Matches" y por evento para "Participantes")
+*   `POST /resena` (Crear un nuevo match)
+*   `DELETE /resena/{id}` (Eliminar un match)
+
+## 🧪 Pruebas Unitarias
+El proyecto cuenta con pruebas unitarias implementadas con **JUnit** y **MockWebServer** para validar la lógica de los repositorios y ViewModels, superando el 80% de cobertura de la lógica de negocio.
+Para ejecutar las pruebas, abre una terminal en la raíz del proyecto y ejecuta:
+```bash
+./gradlew test
